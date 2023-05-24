@@ -2,24 +2,22 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  // text-align: center;
+  text-align: center;
 }
 
 body {
   padding: 1em;
-  width: 90%;
+  // width: 90%;
 }
 
 h1 {
-  margin: 2em;
-}
-
-p {
-  // margin: 1em 0;
+  margin: 2em 0;
 }
 
 button {
-  padding: max(0.5rem 6rem);
+  // padding: 0.5rem 6rem;
+  width: 50%;
+  height: 2rem;
   max-width: 300px;
 }
 

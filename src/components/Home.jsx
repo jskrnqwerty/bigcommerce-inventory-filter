@@ -1,22 +1,14 @@
-import { useState } from "react";
+// import { useState } from "react";
 import * as XLSX from "xlsx";
 import { utils } from "xlsx";
 
 const Home = () => {
-  const [prodData, setProdData] = useState([]);
-  const [foundOnLines, setFoundOnLines] = useState([]);
-  const [imageUrl, setImageUrl] = useState([]);
-  const [prodsFound, setProdsFound] = useState([]);
-  // const [prodsNotfound, setProdsNotfound] = useState([]);
-  const [keywordsFound, setKeywordsFound] = useState([]);
-  const [keywordsNotfound, setKeywordsNotfound] = useState([]);
+  let prodData = [];
+  let foundOnLines = [];
+  let imageUrls = [];
+  let prodsFound = [];
+  let keywordsFound = [];
 
-  // const [searchKeywords, setSearchKeywords] = useState([
-  //   "SR05Z",
-  //   "SR05C",
-  //   "SLBLR",
-  //   "SLBLR5656",
-  // ]);
   const searchKeywords = [
     "SR3HQ",
     "SR3GK",
@@ -111,7 +103,65 @@ const Home = () => {
     "SLBES",
   ];
 
-  const handlefile = async (e) => {
+  const searchFile = (searchKeywords, prodArr) => {
+    searchKeywords.forEach((keyword) => {
+      prodArr.forEach((prodItem, index) => {
+        const lineNum = index + 1;
+        const prodTitle = prodItem[2];
+        const prodUpc = prodItem[24];
+        const prodMpn = prodItem[26];
+
+        if (prodTitle !== undefined) {
+          if (prodTitle.includes(keyword)) {
+            keywordsFound = [...keywordsFound, keyword];
+            prodsFound = [
+              ...prodsFound,
+              [lineNum, keyword, prodTitle, prodUpc, prodMpn],
+            ];
+            // console.log(lineNum, prodTitle, prodUpc, prodMpn, prodImage);
+            foundOnLines = [...foundOnLines, lineNum];
+            // console.log(foundOnLines);
+          }
+        }
+      });
+    });
+  };
+
+  const listMissingKeywords = (keywordsArr1, keywordsArr2) => {
+    let difference = keywordsArr1.filter((x) => !keywordsArr2.includes(x));
+    console.log(`${difference.length} products were not found ${difference}`);
+  };
+
+  const exportNewFile = (arr) => {
+    const newWorkbook = XLSX.utils.book_new();
+    const newWorksheet = XLSX.utils.aoa_to_sheet(arr);
+    XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, "NewSheet1");
+    XLSX.writeFile(newWorkbook, "NewSheet.xlsx");
+  };
+
+  const listImageUrls = (prodLine, prodArr) => {
+    const imageOnLine = prodLine + 1;
+
+    prodLine.forEach((lineNum) => {
+      prodArr.forEach((prodItem, index) => {
+        const line = index + 1;
+        const prodImage = prodItem[41];
+        if (lineNum === line - 1) {
+          imageUrls.push([prodImage]);
+        }
+      });
+    });
+
+    const exportImageUrls = (imageUrls) => {
+      const newWorkbook = XLSX.utils.book_new();
+      const newWorksheet = XLSX.utils.aoa_to_sheet(imageUrls);
+      XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, "NewSheet1");
+      XLSX.writeFile(newWorkbook, "NewSheetImages.xlsx");
+    };
+    exportImageUrls(imageUrls);
+  };
+
+  const readFileData = async (e) => {
     const file = e.target.files[0];
     const fileData = await file.arrayBuffer();
     const workbook = XLSX.read(fileData);
@@ -124,66 +174,12 @@ const Home = () => {
     });
     const source = e.target.name;
     if (source === "inventoryFile") {
-      setProdData(jsonDataArr);
+      prodData = jsonDataArr;
       console.log("Inventory file read");
     }
   };
 
-  const searchFile = (searchKeywords, prodArr) => {
-    searchKeywords.forEach((keyword) => {
-      prodArr.forEach((prodItem, index) => {
-        const lineNum = index + 1;
-        const prodTitle = prodItem[2];
-        const prodUpc = prodItem[24];
-        const prodMpn = prodItem[26];
-
-        if (prodTitle !== undefined) {
-          if (prodTitle.includes(keyword)) {
-            setKeywordsFound((prevArr) => [...prevArr, keyword]);
-            setProdsFound((prevArr) => [
-              ...prevArr,
-              [lineNum, keyword, prodTitle, prodUpc, prodMpn],
-            ]);
-            // console.log(lineNum, prodTitle, prodUpc, prodMpn, prodImage);
-            setFoundOnLines((oldArray) => [...oldArray, lineNum]);
-            // console.log(foundOnLines);
-          }
-        }
-      });
-    });
-  };
-
-  const findNotFoundProds = (arr1, arr2) => {
-    let difference = arr1.filter((x) => !arr2.includes(x));
-    console.log(`${difference.length} products were not found ${difference}`);
-  };
-
-  const exportNewFile = (arr) => {
-    const newWorkbook = XLSX.utils.book_new();
-    const newWorksheet = XLSX.utils.aoa_to_sheet(arr);
-    XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, "NewSheet1");
-    XLSX.writeFile(newWorkbook, "NewSheet.xlsx");
-  };
-
-  const imageUrlList = (prodLine, prodArr) => {
-    const imageLine = prodLine + 1;
-
-    prodLine.forEach((lineNum) => {
-      prodArr.forEach((prodItem, index) => {
-        const line = index + 1;
-        const prodImage = prodItem[41];
-        if (lineNum === line - 1) {
-          setImageUrl((prevArr) => [...prevArr, [prodImage]]);
-        }
-      });
-    });
-    const newWorkbook = XLSX.utils.book_new();
-    const newWorksheet = XLSX.utils.aoa_to_sheet(imageUrl);
-    XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, "NewSheet1");
-    XLSX.writeFile(newWorkbook, "NewSheetImages.xlsx");
-  };
-
-  const handleSearch = () => {
+  const filterAndExportData = () => {
     searchFile(searchKeywords, prodData);
     const indexNumList = prodData[0];
     console.log(indexNumList);
@@ -191,11 +187,10 @@ const Home = () => {
       `${foundOnLines.length} out of ${searchKeywords.length} items were found`
     );
     console.log(prodsFound);
-    findNotFoundProds(searchKeywords, keywordsFound);
-    imageUrlList(foundOnLines, prodData);
-    // console.log("Images: ", imageUrl);
+    listMissingKeywords(searchKeywords, keywordsFound);
+    listImageUrls(foundOnLines, prodData);
+    // console.log("Images: ", imageUrls);
     exportNewFile(prodsFound);
-    exportNewFile(imageUrl);
   };
 
   return (
@@ -207,14 +202,14 @@ const Home = () => {
           type="file"
           name="inventoryFile"
           onChange={(e) => {
-            handlefile(e);
+            readFileData(e);
           }}
         />
         <button
           type="button"
-          onClick={handleSearch}
+          onClick={filterAndExportData}
         >
-          Search
+          Export
         </button>
       </div>
     </>

@@ -2,19 +2,20 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  text-align: center;
 }
 
 body {
   padding: 1em;
-  width: 90%;
 }
 
 h1 {
-  margin: 2em;
+  margin: 2em 0;
 }
 
 button {
-  padding: 0.5rem 6rem;
+  width: 50%;
+  height: 2rem;
   max-width: 300px;
 }
 
