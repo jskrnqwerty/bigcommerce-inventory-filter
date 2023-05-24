@@ -2,6 +2,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  // text-align: center;
 }
 
 body {
@@ -14,11 +15,17 @@ h1 {
 }
 
 p {
-  margin: 1em 0;
+  // margin: 1em 0;
+}
+
+button {
+  padding: max(0.5rem 6rem);
+  max-width: 300px;
 }
 
 .in {
   display: flex;
   flex-direction: column;
   gap: 1em;
+  align-items: center;
 }
