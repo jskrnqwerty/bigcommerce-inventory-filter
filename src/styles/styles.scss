@@ -1,0 +1,24 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  padding: 1em;
+  width: 90%;
+}
+
+h1 {
+  margin: 2em;
+}
+
+p {
+  margin: 1em 0;
+}
+
+.in {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
