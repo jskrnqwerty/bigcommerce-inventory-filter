@@ -1,13 +1,12 @@
-// import { useState } from "react";
 import * as XLSX from "xlsx";
 import { utils } from "xlsx";
 
 const Home = () => {
-  let prodData = [];
-  let foundOnLines = [];
-  let imageUrls = [];
-  let prodsFound = [];
-  let keywordsFound = [];
+  let productsDataArr = [];
+  let productsFoundOnLineNumArr = [];
+  let imageUrlsArr = [];
+  let productsFoundArr = [];
+  let keywordsFoundArr = [];
 
   const searchKeywords = [
     "SR3HQ",
@@ -110,17 +109,16 @@ const Home = () => {
         const prodTitle = prodItem[2];
         const prodUpc = prodItem[24];
         const prodMpn = prodItem[26];
-
         if (prodTitle !== undefined) {
           if (prodTitle.includes(keyword)) {
-            keywordsFound = [...keywordsFound, keyword];
-            prodsFound = [
-              ...prodsFound,
+            keywordsFoundArr = [...keywordsFoundArr, keyword];
+            productsFoundArr = [
+              ...productsFoundArr,
               [lineNum, keyword, prodTitle, prodUpc, prodMpn],
             ];
             // console.log(lineNum, prodTitle, prodUpc, prodMpn, prodImage);
-            foundOnLines = [...foundOnLines, lineNum];
-            // console.log(foundOnLines);
+            productsFoundOnLineNumArr = [...productsFoundOnLineNumArr, lineNum];
+            // console.log(productsFoundOnLineNumArr);
           }
         }
       });
@@ -139,27 +137,32 @@ const Home = () => {
     XLSX.writeFile(newWorkbook, "NewSheet.xlsx");
   };
 
-  const listImageUrls = (prodLine, prodArr) => {
-    const imageOnLine = prodLine + 1;
-
+  const listImageUrlsArr = (prodLine, prodArr) => {
+    // const imageOnLine = prodLine + 1;
     prodLine.forEach((lineNum) => {
       prodArr.forEach((prodItem, index) => {
         const line = index + 1;
         const prodImage = prodItem[41];
         if (lineNum === line - 1) {
-          imageUrls.push([prodImage]);
+          imageUrlsArr.push(prodImage);
         }
       });
     });
-
-    const exportImageUrls = (imageUrls) => {
-      const newWorkbook = XLSX.utils.book_new();
-      const newWorksheet = XLSX.utils.aoa_to_sheet(imageUrls);
-      XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, "NewSheet1");
-      XLSX.writeFile(newWorkbook, "NewSheetImages.xlsx");
-    };
-    exportImageUrls(imageUrls);
   };
+
+  const combineProductsAndImageUrlArr = (productsFoundArr, imageUrlsArr) => {
+    productsFoundArr.map((productItem, productIndex) => {
+      imageUrlsArr.forEach((imageItem, imageIndex) => {
+        if (productIndex === imageIndex) {
+          productItem.push(imageItem);
+        }
+      });
+    });
+  };
+
+  // ----------------------------------------------------------------------
+  // handle functions
+  // ----------------------------------------------------------------------
 
   const readFileData = async (e) => {
     const file = e.target.files[0];
@@ -174,23 +177,24 @@ const Home = () => {
     });
     const source = e.target.name;
     if (source === "inventoryFile") {
-      prodData = jsonDataArr;
+      productsDataArr = jsonDataArr;
       console.log("Inventory file read");
     }
   };
 
   const filterAndExportData = () => {
-    searchFile(searchKeywords, prodData);
-    const indexNumList = prodData[0];
+    searchFile(searchKeywords, productsDataArr);
+    const indexNumList = productsDataArr[0];
     console.log(indexNumList);
     console.log(
-      `${foundOnLines.length} out of ${searchKeywords.length} items were found`
+      `${productsFoundOnLineNumArr.length} out of ${searchKeywords.length} items were found`
     );
-    console.log(prodsFound);
-    listMissingKeywords(searchKeywords, keywordsFound);
-    listImageUrls(foundOnLines, prodData);
-    // console.log("Images: ", imageUrls);
-    exportNewFile(prodsFound);
+    console.log(productsFoundArr);
+    listMissingKeywords(searchKeywords, keywordsFoundArr);
+    listImageUrlsArr(productsFoundOnLineNumArr, productsDataArr);
+    combineProductsAndImageUrlArr(productsFoundArr, imageUrlsArr);
+    // console.log("Images: ", imageUrlsArr);
+    exportNewFile(productsFoundArr);
   };
 
   return (
