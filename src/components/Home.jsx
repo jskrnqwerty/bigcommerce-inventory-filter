@@ -1,5 +1,6 @@
 import * as XLSX from "xlsx";
 import { utils } from "xlsx";
+import { newEgg_ComputerHardware_BatchItemCreation_ProcessorsDesktops as keywordsList } from "../data/Data";
 
 const Home = () => {
   let productsDataArr = [];
@@ -7,127 +8,51 @@ const Home = () => {
   let imageUrlsArr = [];
   let productsFoundArr = [];
   let keywordsFoundArr = [];
+  let missingKeywordsArr = [];
 
-  const searchKeywords = [
-    "SR3HQ",
-    "SR3GK",
-    "SR3J3",
-    "SR1XN",
-    "SR1XP",
-    "SR201",
-    "SR207",
-    "SR2P0",
-    "SR2P4",
-    "SR3HQ",
-    "SR2R6",
-    "SR3AZ",
-    "SR20A",
-    "SR1GM",
-    "SR205",
-    "SR206",
-    "SR1GL",
-    "SR222",
-    "SR2S9",
-    "SR2PJ",
-    "SR1XE",
-    "SR2N4",
-    "SR2JV",
-    "SRKN1",
-    "SR3GJ",
-    "SR3GH",
-    "SR3B6",
-    "SR1XH",
-    "SR1S6",
-    "SR3GB",
-    "SR3GF",
-    "SR3GD",
-    "SR3B3",
-    "SR3AX",
-    "SR3KJ",
-    "SRF8W",
-    "SR2P2",
-    "SR1YA",
-    "SR0KK",
-    "SR1AB",
-    "SR2N7",
-    "SR2JT",
-    "SR2L8",
-    "SR337",
-    "SR1QN",
-    "SR2L6",
-    "SR1PK",
-    "SR338",
-    "SR35C",
-    "SR1NP",
-    "SR1PK",
-    "SR1PL",
-    "SR1TC",
-    "SR1NM",
-    "SR2HG",
-    "SR2HD",
-    "SR14E",
-    "SR1CA",
-    "SR14D",
-    "SR14P",
-    "SR2BW",
-    "SR32W",
-    "SR335",
-    "SR337",
-    "SR3XE",
-    "SR3HA",
-    "SR14H",
-    "SR147",
-    "SR149",
-    "SR1QU",
-    "SR2L2",
-    "SR3QR",
-    "SR3QS",
-    "SRG13",
-    "SR2PJ",
-    "SR1AN",
-    "SR2JV",
-    "SR2NA",
-    "SR20P",
-    "SR1YA",
-    "SR204",
-    "SLBEJ",
-    "SLBCH",
-    "SLBEN",
-    "SR0LD",
-    "SR1AU",
-    "SLBV4",
-    "SLBV7",
-    "SLBCD",
-    "SLBEY",
-    "SLBES",
-  ];
+  const searchKeywords = keywordsList;
 
-  const searchFile = (searchKeywords, prodArr) => {
-    searchKeywords.forEach((keyword) => {
-      prodArr.forEach((prodItem, index) => {
-        const lineNum = index + 1;
-        const prodTitle = prodItem[2];
-        const prodUpc = prodItem[24];
-        const prodMpn = prodItem[26];
-        if (prodTitle !== undefined) {
-          if (prodTitle.includes(keyword)) {
+  const searchFile = (searchKeywords, productsDataArr) => {
+    searchKeywords.forEach((keyword, keywordIndex) => {
+      const keywordArrLineNum = keywordIndex + 1;
+      productsDataArr.forEach((productsDataArrItem, productsDataArrIndex) => {
+        const productDataArrLineNum = productsDataArrIndex + 1;
+        const productTitle = productsDataArrItem[2];
+        const productUpc = productsDataArrItem[24];
+        const productMpn = productsDataArrItem[26];
+        if (productTitle !== undefined) {
+          if (productTitle.includes(keyword)) {
             keywordsFoundArr = [...keywordsFoundArr, keyword];
             productsFoundArr = [
               ...productsFoundArr,
-              [lineNum, keyword, prodTitle, prodUpc, prodMpn],
+              [
+                keywordArrLineNum,
+                productDataArrLineNum,
+                keyword,
+                productTitle,
+                productUpc,
+                productMpn,
+              ],
             ];
-            // console.log(lineNum, prodTitle, prodUpc, prodMpn, prodImage);
-            productsFoundOnLineNumArr = [...productsFoundOnLineNumArr, lineNum];
-            // console.log(productsFoundOnLineNumArr);
+            productsFoundOnLineNumArr = [
+              ...productsFoundOnLineNumArr,
+              productDataArrLineNum,
+            ];
           }
         }
       });
     });
   };
 
-  const listMissingKeywords = (keywordsArr1, keywordsArr2) => {
-    let difference = keywordsArr1.filter((x) => !keywordsArr2.includes(x));
-    console.log(`${difference.length} products were not found ${difference}`);
+  const listMissingKeywords = (searchKeywords, keywordsFoundArr) => {
+    let difference = searchKeywords.filter(
+      (keyword) => !keywordsFoundArr.includes(keyword)
+    );
+    console.log(`${difference.length} products were not found`);
+    console.log(difference);
+    // missingKeywordsArr = difference;
+    missingKeywordsArr = difference.map((item) => [item]);
+    console.log("missingKeywordsArr", missingKeywordsArr);
   };
 
   const exportNewFile = (arr) => {
@@ -138,7 +63,6 @@ const Home = () => {
   };
 
   const listImageUrlsArr = (prodLine, prodArr) => {
-    // const imageOnLine = prodLine + 1;
     prodLine.forEach((lineNum) => {
       prodArr.forEach((prodItem, index) => {
         const line = index + 1;
@@ -159,6 +83,8 @@ const Home = () => {
       });
     });
   };
+
+  const insertMissingKeywordsToProductsFoundArr = () => {};
 
   // ----------------------------------------------------------------------
   // handle functions
@@ -193,8 +119,8 @@ const Home = () => {
     listMissingKeywords(searchKeywords, keywordsFoundArr);
     listImageUrlsArr(productsFoundOnLineNumArr, productsDataArr);
     combineProductsAndImageUrlArr(productsFoundArr, imageUrlsArr);
-    // console.log("Images: ", imageUrlsArr);
-    exportNewFile(productsFoundArr);
+    insertMissingKeywordsToProductsFoundArr(missingKeywordsArr);
+    exportNewFile(productsFoundArr.concat(missingKeywordsArr));
   };
 
   return (
