@@ -3,7 +3,7 @@ import { utils } from "xlsx";
 import { newEgg_ComputerHardware_BatchItemCreation_ProcessorsDesktops as keywordsList } from "../data/Data";
 
 const Home = () => {
-  let productsDataArr = [];
+  let productsDataArr = []; // array to store
   let productsFoundOnLineNumArr = [];
   let imageUrlsArr = [];
   let productsFoundArr = [];
@@ -20,6 +20,11 @@ const Home = () => {
         const productTitle = productsDataArrItem[2];
         const productUpc = productsDataArrItem[24];
         const productMpn = productsDataArrItem[26];
+        let productBrand = "X";
+        if (productTitle) {
+          // extract brand name from title
+          productBrand = productTitle.split(" ")[0];
+        }
         if (productTitle !== undefined) {
           if (productTitle.includes(keyword)) {
             keywordsFoundArr = [...keywordsFoundArr, keyword];
@@ -30,6 +35,7 @@ const Home = () => {
                 productDataArrLineNum,
                 keyword,
                 productTitle,
+                productBrand,
                 productUpc,
                 productMpn,
               ],
@@ -139,7 +145,7 @@ const Home = () => {
           type="button"
           onClick={filterAndExportData}
         >
-          Export
+          Extract Data
         </button>
       </div>
     </>
