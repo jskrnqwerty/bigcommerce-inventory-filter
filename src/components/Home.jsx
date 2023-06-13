@@ -1,8 +1,10 @@
 import * as XLSX from "xlsx";
 import { utils } from "xlsx";
 import { newEgg_ComputerHardware_BatchItemCreation_ProcessorsDesktops as keywordsList } from "../data/Data";
+import { useState } from "react";
 
 const Home = () => {
+  const [status, setStatus] = useState("Awaiting file upload");
   let productsDataArr = []; // array to store
   let productsFoundOnLineNumArr = [];
   let imageUrlsArr = [];
@@ -13,36 +15,36 @@ const Home = () => {
   const searchKeywords = keywordsList;
 
   const searchFile = (searchKeywords, productsDataArr) => {
-    searchKeywords.forEach((keyword, keywordIndex) => {
-      const keywordArrLineNum = keywordIndex + 1;
+    searchKeywords.forEach((searchKeyword, keywordIndex) => {
+      const serialNumber = keywordIndex + 2;
       productsDataArr.forEach((productsDataArrItem, productsDataArrIndex) => {
-        const productDataArrLineNum = productsDataArrIndex + 1;
-        const productTitle = productsDataArrItem[2];
-        const productUpc = productsDataArrItem[24];
-        const productMpn = productsDataArrItem[26];
-        let productBrand = "X";
-        if (productTitle) {
+        const lineNumber = productsDataArrIndex + 1;
+        const title = productsDataArrItem[2];
+        const upc = productsDataArrItem[24];
+        const manufacturerPartNumber = productsDataArrItem[26];
+        let manufacturer = "X";
+        if (title) {
           // extract brand name from title
-          productBrand = productTitle.split(" ")[0];
+          manufacturer = title.split(" ")[0];
         }
-        if (productTitle !== undefined) {
-          if (productTitle.includes(keyword)) {
-            keywordsFoundArr = [...keywordsFoundArr, keyword];
+        if (title !== undefined) {
+          if (title.includes(searchKeyword)) {
+            keywordsFoundArr = [...keywordsFoundArr, searchKeyword];
             productsFoundArr = [
               ...productsFoundArr,
               [
-                keywordArrLineNum,
-                productDataArrLineNum,
-                keyword,
-                productTitle,
-                productBrand,
-                productUpc,
-                productMpn,
+                serialNumber,
+                lineNumber,
+                searchKeyword,
+                title,
+                manufacturer,
+                upc,
+                manufacturerPartNumber,
               ],
             ];
             productsFoundOnLineNumArr = [
               ...productsFoundOnLineNumArr,
-              productDataArrLineNum,
+              lineNumber,
             ];
           }
         }
@@ -90,13 +92,14 @@ const Home = () => {
     });
   };
 
-  const insertMissingKeywordsToProductsFoundArr = () => {};
+  // const insertMissingKeywordsToProductsFoundArr = () => {};
 
   // ----------------------------------------------------------------------
   // handle functions
   // ----------------------------------------------------------------------
 
   const readFileData = async (e) => {
+    setStatus("Reading inventory file");
     const file = e.target.files[0];
     const fileData = await file.arrayBuffer();
     const workbook = XLSX.read(fileData);
@@ -110,7 +113,7 @@ const Home = () => {
     const source = e.target.name;
     if (source === "inventoryFile") {
       productsDataArr = jsonDataArr;
-      console.log("Inventory file read");
+      setStatus("Inventory file read");
     }
   };
 
@@ -125,7 +128,7 @@ const Home = () => {
     listMissingKeywords(searchKeywords, keywordsFoundArr);
     listImageUrlsArr(productsFoundOnLineNumArr, productsDataArr);
     combineProductsAndImageUrlArr(productsFoundArr, imageUrlsArr);
-    insertMissingKeywordsToProductsFoundArr(missingKeywordsArr);
+    // insertMissingKeywordsToProductsFoundArr(missingKeywordsArr);
     exportNewFile(productsFoundArr.concat(missingKeywordsArr));
   };
 
@@ -141,6 +144,7 @@ const Home = () => {
             readFileData(e);
           }}
         />
+        <p>File Status: {status}</p>
         <button
           type="button"
           onClick={filterAndExportData}
