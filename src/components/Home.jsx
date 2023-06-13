@@ -1,16 +1,14 @@
 import * as XLSX from "xlsx";
 import { utils } from "xlsx";
 import { newEgg_ComputerHardware_BatchItemCreation_ProcessorsDesktops as keywordsList } from "../data/Data";
-import { useState } from "react";
 
 const Home = () => {
-  const [status, setStatus] = useState("Awaiting file upload");
-  let productsDataArr = []; // array to store
-  let productsFoundOnLineNumArr = [];
-  let imageUrlsArr = [];
-  let productsFoundArr = [];
-  let keywordsFoundArr = [];
-  let missingKeywordsArr = [];
+  let productsData = []; // array to store
+  let productsLineNumbers = [];
+  let imageUrls = [];
+  let productsFound = [];
+  let keywordsFound = [];
+  let keywordsNotFound = [];
 
   const searchKeywords = keywordsList;
 
@@ -29,9 +27,9 @@ const Home = () => {
         }
         if (title !== undefined) {
           if (title.includes(searchKeyword)) {
-            keywordsFoundArr = [...keywordsFoundArr, searchKeyword];
-            productsFoundArr = [
-              ...productsFoundArr,
+            keywordsFound = [...keywordsFound, searchKeyword];
+            productsFound = [
+              ...productsFound,
               [
                 serialNumber,
                 lineNumber,
@@ -42,10 +40,7 @@ const Home = () => {
                 manufacturerPartNumber,
               ],
             ];
-            productsFoundOnLineNumArr = [
-              ...productsFoundOnLineNumArr,
-              lineNumber,
-            ];
+            productsLineNumbers = [...productsLineNumbers, lineNumber];
           }
         }
       });
@@ -59,8 +54,8 @@ const Home = () => {
     console.log(`${difference.length} products were not found`);
     console.log(difference);
     // missingKeywordsArr = difference;
-    missingKeywordsArr = difference.map((item) => [item]);
-    console.log("missingKeywordsArr", missingKeywordsArr);
+    keywordsNotFound = difference.map((item) => [item]);
+    console.log("missingKeywordsArr", keywordsNotFound);
   };
 
   const exportNewFile = (arr) => {
@@ -76,7 +71,7 @@ const Home = () => {
         const line = index + 1;
         const prodImage = prodItem[41];
         if (lineNum === line - 1) {
-          imageUrlsArr.push(prodImage);
+          imageUrls.push(prodImage);
         }
       });
     });
@@ -92,14 +87,13 @@ const Home = () => {
     });
   };
 
-  // const insertMissingKeywordsToProductsFoundArr = () => {};
+  const insertMissingKeywordsToProductsFoundArr = () => {};
 
   // ----------------------------------------------------------------------
   // handle functions
   // ----------------------------------------------------------------------
 
   const readFileData = async (e) => {
-    setStatus("Reading inventory file");
     const file = e.target.files[0];
     const fileData = await file.arrayBuffer();
     const workbook = XLSX.read(fileData);
@@ -112,24 +106,24 @@ const Home = () => {
     });
     const source = e.target.name;
     if (source === "inventoryFile") {
-      productsDataArr = jsonDataArr;
-      setStatus("Inventory file read");
+      productsData = jsonDataArr;
+      console.log("Inventory file read");
     }
   };
 
   const filterAndExportData = () => {
-    searchFile(searchKeywords, productsDataArr);
-    const indexNumList = productsDataArr[0];
+    searchFile(searchKeywords, productsData);
+    const indexNumList = productsData[0];
     console.log(indexNumList);
     console.log(
-      `${productsFoundOnLineNumArr.length} out of ${searchKeywords.length} items were found`
+      `${productsLineNumbers.length} out of ${searchKeywords.length} items were found`
     );
-    console.log(productsFoundArr);
-    listMissingKeywords(searchKeywords, keywordsFoundArr);
-    listImageUrlsArr(productsFoundOnLineNumArr, productsDataArr);
-    combineProductsAndImageUrlArr(productsFoundArr, imageUrlsArr);
-    // insertMissingKeywordsToProductsFoundArr(missingKeywordsArr);
-    exportNewFile(productsFoundArr.concat(missingKeywordsArr));
+    console.log(productsFound);
+    listMissingKeywords(searchKeywords, keywordsFound);
+    listImageUrlsArr(productsLineNumbers, productsData);
+    combineProductsAndImageUrlArr(productsFound, imageUrls);
+    insertMissingKeywordsToProductsFoundArr(keywordsNotFound);
+    exportNewFile(productsFound.concat(keywordsNotFound));
   };
 
   return (
@@ -144,7 +138,6 @@ const Home = () => {
             readFileData(e);
           }}
         />
-        <p>File Status: {status}</p>
         <button
           type="button"
           onClick={filterAndExportData}
