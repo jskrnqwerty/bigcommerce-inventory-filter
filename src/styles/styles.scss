@@ -2,15 +2,18 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  text-align: center;
+  // text-align: center;
 }
 
 body {
+  // margin: auto;
   padding: 1em;
   // width: 90%;
 }
 
 h1 {
+  display: flex;
+  justify-content: center;
   margin: 2em 0;
 }
 
@@ -26,4 +29,13 @@ button {
   flex-direction: column;
   gap: 1em;
   align-items: center;
+}
+
+.stats {
+  margin-top: 2em;
+  ul {
+    margin-top: 1em;
+    list-style: none;
+    text-align: right;
+  }
 }

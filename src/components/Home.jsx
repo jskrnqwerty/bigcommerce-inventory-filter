@@ -4,8 +4,12 @@ import { newEgg_ComputerHardware_BatchItemCreation_ProcessorsDesktops as keyword
 import { useState } from "react";
 
 const Home = () => {
-  // const [found, setFound] = useState(0);
-  // const [isProductFound, setIsProductFound] = useState(false);
+  const [linesSearched, setLinesSearched] = useState(0);
+  const [searching, setSearching] = useState(0);
+  const [listed, setListed] = useState(0);
+  const [duplicates, setDuplicates] = useState(0);
+  const [found, setFound] = useState(0);
+  const [notFound, setNotFound] = useState(0);
   let productsInventory = []; // stores inventory file's data in JSON array
   let productsLineNumbers = []; // list of resp. line numbers of products in inventory file
   let productsFound = []; // stores list of products data gathered from inventory file
@@ -137,17 +141,13 @@ const Home = () => {
     products,
     finalProducts
   ) => {
-    const duplicates = foundCount + notFoundCount - searchKeywords.length;
-    console.log("---Export Stats---");
-    console.log("Total lines searched:", productsInventory.length);
-    console.log("Searching:", searchKeywords.length);
-    console.log("Listed:", finalProducts.length - 1);
-    console.log(
-      "Duplicates:",
-      foundCount + notFoundCount - searchKeywords.length
-    );
-    console.log("Found:", foundCount - duplicates);
-    console.log("Not found:", notFoundCount);
+    const duplicateCount = foundCount + notFoundCount - searchKeywords.length;
+    setLinesSearched(productsInventory.length);
+    setSearching(searchKeywords.length);
+    setListed(finalProducts.length - 1);
+    setDuplicates(duplicateCount);
+    setFound(foundCount - duplicateCount);
+    setNotFound(notFoundCount);
   };
 
   // ----------------------------------------------------------------------
@@ -182,7 +182,7 @@ const Home = () => {
     console.log(indexNumList);
     const productsImageUrls = findImageUrls(products, productsInventory);
     const finalProducts = combine(products, productsImageUrls);
-    // exportNewFile(finalProducts);
+    exportNewFile(finalProducts);
     calculateStats(searchKeywords, productsInventory, products, finalProducts);
   };
 
@@ -208,7 +208,17 @@ const Home = () => {
         >
           Extract Data
         </button>
-        {/* <p>Search items: {toBeFound}</p> */}
+        <div className="stats">
+          <h3>---Export Stats---</h3>
+          <ul>
+            <li>Total lines searched: {linesSearched}</li>
+            <li>Searching: {searching}</li>
+            <li>Listed: {listed}</li>
+            <li>Duplicates: {duplicates}</li>
+            <li>Found: {found}</li>
+            <li>Not Found: {notFound}</li>
+          </ul>
+        </div>
       </div>
     </>
   );
